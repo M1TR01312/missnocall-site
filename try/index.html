@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Hear your AI receptionist — MissNoCall</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--forest:#16302b;--forest2:#21443d;--deep:#0f231f;--gold:#d4a373;--gold2:#b8875a;--cream:#f6f3ec;--sand:#e9dcc3;--muted:#a4c0b6}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;background:var(--forest);color:#fff;font-family:"Helvetica Neue",Arial,sans-serif;line-height:1.5;display:flex;flex-direction:column}
+  header{padding:18px 16px}
+  header .in{max-width:620px;margin:0 auto;display:flex;align-items:center;gap:10px;font-family:Georgia,serif;font-weight:700;font-size:20px}
+  header svg{width:30px;height:30px}
+  header span{color:var(--gold)}
+  main{flex:1;max-width:620px;width:100%;margin:0 auto;padding:10px 16px 40px;text-align:center}
+  .eyebrow{font-size:12px;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);font-weight:700}
+  h1{font-family:Georgia,serif;font-size:34px;line-height:1.15;margin:12px 0 10px}
+  h1 em{font-style:normal;color:var(--gold)}
+  .lead{color:#d3e2dc;font-size:17px;margin:0 auto;max-width:480px}
+  .orb{position:relative;width:170px;height:170px;margin:34px auto 22px}
+  .orb .core{position:absolute;inset:22px;border-radius:50%;background:var(--sand);display:flex;align-items:center;justify-content:center;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+  .orb .core svg{width:58px;height:58px}
+  .orb .ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(212,163,115,.55);opacity:0}
+  .orb.talking .ring{animation:pulse 1.6s ease-out infinite}
+  .orb.talking .ring.r2{animation-delay:.5s}
+  @keyframes pulse{0%{transform:scale(.75);opacity:.9}100%{transform:scale(1.15);opacity:0}}
+  @media (prefers-reduced-motion: reduce){.orb.talking .ring{animation:none;opacity:.6}}
+  .status{font-size:15px;color:var(--muted);min-height:24px}
+  .btn{display:inline-block;font:inherit;font-weight:700;font-size:18px;border:0;border-radius:10px;padding:16px 34px;cursor:pointer;background:var(--gold);color:#fff;margin-top:16px;text-decoration:none}
+  .btn.end{background:#b4462f}
+  .btn:disabled{opacity:.6;cursor:wait}
+  .tips{margin:26px auto 0;max-width:460px;text-align:left;background:rgba(255,255,255,.06);border:1px solid #33574f;border-radius:14px;padding:16px 18px;font-size:15px;color:#d3e2dc}
+  .tips b{color:#fff}
+  .tips ul{margin:8px 0 0;padding-left:18px}
+  .tx{margin:22px auto 0;max-width:480px;text-align:left;font-size:15px}
+  .tx div{padding:7px 12px;border-radius:12px;margin:6px 0;max-width:88%}
+  .tx .agent{background:var(--forest2);color:#e5f0ec}
+  .tx .user{background:var(--gold);color:#fff;margin-left:auto}
+  .after{display:none;margin-top:26px;background:var(--cream);color:var(--forest);border-radius:16px;padding:22px}
+  .after h2{font-family:Georgia,serif;margin:0 0 6px;font-size:24px}
+  .after p{margin:0;color:#4b5a56}
+  .err{margin-top:16px;color:#ffd3c9}
+  [hidden]{display:none !important}
+  footer{text-align:center;font-size:12.5px;color:#7f9f95;padding:16px}
+  footer a{color:#bfd3cb}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mnc-mark" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="116" fill="#e9dcc3"/>
+    <g transform="translate(-8 11)">
+      <g transform="translate(222 278)"><g transform="rotate(-45) scale(0.86)">
+        <path fill="#16302b" stroke="#16302b" stroke-width="26" stroke-linejoin="round" d="M -20 -160 L 52 -160 L 52 -96 L 4 -96 C -58 -52 -58 52 4 96 L 52 96 L 52 160 L -20 160 C -122 100 -122 -100 -20 -160 Z"/>
+      </g></g>
+      <circle cx="362" cy="156" r="66" fill="#16302b"/>
+      <path d="M 331 157 L 354 180 L 395 136" fill="none" stroke="#e9dcc3" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </symbol>
+</svg>
+<header><div class="in"><svg aria-hidden="true"><use href="#mnc-mark"/></svg><div>MissNo<span>Call</span></div></div></header>
+
+<main>
+  <div class="eyebrow">Your AI receptionist demo</div>
+  <h1>Hear <em id="biz">your business</em> answer every call.</h1>
+  <p class="lead">We built this receptionist from your website in about a minute. Call it like a new customer would.</p>
+
+  <div class="orb" id="orb" aria-hidden="true">
+    <div class="ring"></div><div class="ring r2"></div>
+    <div class="core"><svg viewBox="0 0 512 512"><use href="#mnc-mark"/></svg></div>
+  </div>
+  <div class="status" id="status" aria-live="polite">Press start, then allow your microphone.</div>
+  <button class="btn" id="startBtn">Start the call</button>
+  <button class="btn end" id="endBtn" hidden>End call</button>
+  <div class="err" id="err" hidden></div>
+
+  <div class="tips" id="tips">
+    <b>Try asking it to:</b>
+    <ul>
+      <li>tell you what a service costs</li>
+      <li>book an appointment for later this week</li>
+      <li>handle something unusual, like a complaint</li>
+    </ul>
+  </div>
+
+  <div class="tx" id="tx"></div>
+
+  <div class="after" id="after">
+    <h2>Want this answering your real calls?</h2>
+    <p>The live version is built on your exact services, prices, hours and calendar, and keeps your current number.</p>
+    <a class="btn" href="https://cal.com/missnocall/demo" target="_blank" rel="noopener">Book a 15-minute call</a>
+  </div>
+</main>
+<footer>This is a demo built from public information on your website, so some details may be off. It is an AI assistant and calls may be recorded. · <a href="https://missnocall.co">missnocall.co</a></footer>
+
+<script type="module">
+const FN = "https://ytekgbwkzlfvejejobss.supabase.co/functions/v1/studio";
+const $ = (id) => document.getElementById(id);
+const demoId = new URLSearchParams(location.search).get("d");
+let client = null;
+
+async function api(body) {
+  const r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  let d = {};
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok || d.ok === false) throw new Error(d.error || "Something went wrong. Please try again.");
+  return d;
+}
+function fail(msg) { $("err").textContent = msg; $("err").hidden = false; }
+
+if (!demoId) { $("startBtn").disabled = true; fail("This demo link is incomplete. Please use the link we sent you."); }
+else api({ action: "meta", demo_id: demoId }).then((d) => {
+  $("biz").textContent = d.business_name;
+  document.title = `Hear ${d.business_name}'s AI receptionist — MissNoCall`;
+  if (d.expired) { $("startBtn").disabled = true; fail("This demo link has expired. Ask us for a new one."); }
+}).catch((e) => { $("startBtn").disabled = true; fail(e.message); });
+
+$("startBtn").onclick = async () => {
+  $("err").hidden = true;
+  $("startBtn").disabled = true; $("status").textContent = "Connecting…";
+  try {
+    const { RetellWebClient } = await import("/assets/retell-web.js");
+    const d = await api({ action: "webcall", demo_id: demoId });
+    client = new RetellWebClient();
+    client.on("call_started", () => {
+      $("status").textContent = "You're live. Talk like a new customer would.";
+      $("startBtn").hidden = true; $("endBtn").hidden = false; $("tips").style.display = "none";
+    });
+    client.on("agent_start_talking", () => { $("orb").classList.add("talking"); $("status").textContent = "Speaking…"; });
+    client.on("agent_stop_talking", () => { $("orb").classList.remove("talking"); $("status").textContent = "Listening…"; });
+    client.on("update", (u) => {
+      const t = (u && u.transcript) || [];
+      $("tx").innerHTML = "";
+      t.slice(-6).forEach((m) => {
+        const div = document.createElement("div");
+        div.className = m.role === "agent" ? "agent" : "user";
+        div.textContent = m.content;
+        $("tx").appendChild(div);
+      });
+    });
+    client.on("call_ended", () => {
+      $("orb").classList.remove("talking");
+      $("status").textContent = "Call ended.";
+      $("endBtn").hidden = true; $("startBtn").hidden = false; $("startBtn").disabled = false; $("startBtn").textContent = "Call again";
+      $("after").style.display = "block";
+      client = null;
+    });
+    client.on("error", (e) => {
+      console.error(e);
+      fail("The call dropped. Please try again.");
+      $("orb").classList.remove("talking"); $("status").textContent = "";
+      $("endBtn").hidden = true; $("startBtn").hidden = false; $("startBtn").disabled = false; $("startBtn").textContent = "Try again";
+    });
+    // Retell v3 web calls use the "gateway" transport: pass call id, transport and ICE servers.
+    await client.startCall({
+      accessToken: d.access_token,
+      callId: d.call_id,
+      transport: d.transport || undefined,
+      iceServers: d.ice_servers || undefined,
+      url: d.url || undefined,
+    });
+  } catch (e) {
+    $("status").textContent = "";
+    $("startBtn").disabled = false;
+    fail(/permission|notallowed/i.test(String(e && (e.name || e.message))) ? "Please allow microphone access and try again." : e.message);
+  }
+};
+$("endBtn").onclick = () => { if (client) client.stopCall(); };
+</script>
+</body>
+</html>

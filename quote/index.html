@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>MissNoCall Quote Calculator</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  /* Layout: inputs left, live quote right. "Client view" hides inputs and rep notes; print = the client quote only. */
+  :root{--forest:#16302b;--forest2:#21443d;--sand:#e9dcc3;--gold:#d4a373;--gold2:#b8875a;--cream:#f6f3ec;--paper:#fff;--line:#e2dccd;--ink:#1f2a28;--muted:#5d6b67;--ok:#1f7a5a;--bad:#b4462f;--warnbg:#fdf4e6;--warnline:#ecd3a6;--warnink:#8a5a14;
+    --display:Georgia,"Times New Roman",serif;--body:"Helvetica Neue",Arial,sans-serif}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+  header.top{background:var(--forest);color:#fff;padding:12px max(16px,env(safe-area-inset-left,0px))}
+  header.top .in{max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .brand{font-family:var(--display);font-weight:700;font-size:20px;display:flex;align-items:center;gap:10px}
+  .brand span{color:var(--gold)}
+  .brand em{font-style:normal;font-family:var(--body);font-weight:400;font-size:13px;color:#bfd3cb;letter-spacing:1px;text-transform:uppercase}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .seg{display:inline-flex;background:var(--forest2);border-radius:10px;padding:3px}
+  .seg button{background:transparent;color:#cfe0da;border:0;border-radius:8px;padding:8px 12px;font:inherit;font-weight:700;font-size:13.5px;cursor:pointer}
+  .seg button.on{background:var(--gold);color:#fff}
+  button.btn{font:inherit;font-weight:700;font-size:14px;border:0;border-radius:10px;padding:9px 14px;cursor:pointer;background:var(--gold);color:#fff}
+  button.btn.ghost{background:transparent;color:#fff;border:1px solid #4b6d65}
+  button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  main{max-width:1180px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-right,0px)) 60px max(16px,env(safe-area-inset-left,0px))}
+  .grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .col-in{display:grid;gap:14px}
+  .card h2{font-size:13px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);margin:0 0 6px}
+  label{display:block;font-size:13px;font-weight:700;color:var(--forest);margin:12px 0 5px}
+  label small,.hint{font-weight:400;color:var(--muted);font-size:12.5px}
+  .hint{margin-top:4px}
+  input[type=text],input[type=number],select{width:100%;font:inherit;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  input[type=range]{width:100%;accent-color:var(--forest)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .rr{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .rr output{font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums}
+  .chk{display:flex;gap:9px;align-items:flex-start;font-weight:400;color:var(--ink);font-size:14px;margin:9px 0 0;cursor:pointer}
+  .chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--forest);flex:none}
+  .chk.off{opacity:.45;cursor:not-allowed}
+  .plans-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+  .plans-pick button{font:inherit;font-size:14px;font-weight:700;padding:10px 6px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--forest);cursor:pointer;line-height:1.2}
+  .plans-pick button small{display:block;font-weight:400;font-size:11px;color:var(--muted);margin-top:2px}
+  .plans-pick button.on{background:var(--forest);color:#fff;border-color:var(--forest)}
+  .plans-pick button.on small{color:#cfe0da}
+  .derived{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);border-top:1px dashed var(--line);margin-top:10px;padding-top:8px}
+  .derived b{color:var(--forest);font-variant-numeric:tabular-nums}
+
+  /* quote */
+  .quote{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:24px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;min-width:0}
+  @media(max-width:600px){.quote{padding:16px}}
+  .qhead{display:none;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:2px solid var(--forest);padding-bottom:12px}
+  .qhead .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;font-size:22px;color:var(--forest)}
+  .qhead .logo span{color:var(--gold2)}
+  .qhead .meta{text-align:right;font-size:12.5px;color:var(--muted)}
+  .qtitle{font-family:var(--display);font-size:26px;line-height:1.2;color:var(--forest);margin:0;text-wrap:balance}
+  .qsub{color:var(--muted);margin:2px 0 0;font-size:14px}
+  .hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  .hero > div{background:var(--cream);border-radius:12px;padding:12px 14px}
+  .hero .k{font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .hero .v{font-family:var(--display);font-size:28px;font-weight:700;color:var(--forest);font-variant-numeric:tabular-nums;line-height:1.15;margin-top:4px}
+  .hero .s{font-size:12.5px;color:var(--muted)}
+  .hero > div.main{background:var(--forest)}
+  .hero > div.main .k,.hero > div.main .s{color:#bfd3cb}
+  .hero > div.main .v{color:var(--gold)}
+  @media(max-width:600px){.hero{grid-template-columns:minmax(0,1fr)}}
+  .plan{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;border:2px solid var(--gold);border-radius:14px;padding:16px 18px;background:#fffaf2}
+  @media(max-width:600px){.plan{grid-template-columns:minmax(0,1fr)}}
+  .plan .pn{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold2);font-weight:700}
+  .plan .pp{font-family:var(--display);font-size:36px;font-weight:700;color:var(--forest);line-height:1.1;font-variant-numeric:tabular-nums}
+  .plan .pp small{font-family:var(--body);font-size:15px;font-weight:400;color:var(--muted)}
+  .plan .ps{font-size:14px;color:var(--ink);margin-top:6px}
+  .plan .ps b{font-variant-numeric:tabular-nums}
+  .plan ul{margin:0;padding-left:18px;font-size:14px}
+  .plan li{margin:2px 0}
+  .plan li.base{list-style:none;margin-left:-18px;font-weight:700;color:var(--forest)}
+  .others{font-size:13.5px;color:var(--muted)}
+  .others b{color:var(--forest)}
+  h3{font-size:15px;color:var(--forest);margin:0 0 6px}
+  .tblwrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:560px}
+  th{background:var(--forest);color:#fff;text-align:left;font-weight:600;padding:8px 10px;font-size:13px}
+  th.n,td.n{text-align:right}
+  td{padding:8px 10px;border-bottom:1px solid #ece6d8;vertical-align:top;font-variant-numeric:tabular-nums}
+  td small{display:block;color:var(--muted);font-size:12px}
+  tr.hi td{background:#fbf0e3}
+  .tagrec{display:inline-block;margin-left:6px;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;background:var(--gold);color:#fff;border-radius:20px;padding:1px 8px;vertical-align:1px}
+  .save{color:var(--ok);font-weight:700}
+  .addons{font-size:14px;margin:0;padding-left:18px}
+  .terms{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px}
+  .terms p{margin:3px 0}
+  .assume{font-size:12.5px;color:var(--muted)}
+  .qfoot{display:none;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:8px}
+
+  /* rep notes */
+  .notes{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:14px}
+  .notes h3{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .flag{border-radius:10px;padding:9px 11px;font-size:14px;margin-top:8px;background:var(--warnbg);border:1px solid var(--warnline);color:var(--warnink)}
+  .flag.info{background:#eef5f2;border-color:#cfe3da;color:#24584a}
+  .flag.rec{background:#f3f7f5;border-color:#cfe3da;color:var(--forest)}
+  .talk{background:var(--cream);border-left:3px solid var(--forest);padding:10px 12px;font-size:14.5px;margin-top:10px;border-radius:0 10px 10px 0}
+  .copybtn{font:inherit;font-size:13px;font-weight:700;background:var(--forest);color:#fff;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+
+  /* pin gate */
+  .gate{max-width:420px;margin:40px auto}
+  .gate h1{font-family:var(--display);color:var(--forest);font-size:24px;margin:0 0 4px}
+  .gate p{color:var(--muted);margin:0 0 10px}
+  .gate input{width:100%;font:inherit;padding:12px;border:1px solid var(--line);border-radius:10px}
+  .gate button{width:100%;margin-top:12px;padding:13px;font-size:16px}
+  .err{background:#fbecea;border:1px solid #efc6be;color:var(--bad);border-radius:10px;padding:10px 12px;font-size:14px;margin-top:10px}
+
+  /* client view */
+  body.client .col-in,body.client .notes{display:none}
+  body.client .grid{grid-template-columns:minmax(0,1fr);max-width:860px;margin:0 auto}
+  body.client .qhead,body.client .qfoot{display:flex}
+  body.client .qfoot{display:block}
+
+  /* PDF download: fixed width so the file looks the same from a laptop or a phone */
+  .pdfwrap{position:relative;width:744px;background:#fff}
+  .pdfwrap .quote{width:auto;max-width:none;border:0;border-radius:0;padding:4px 6px;gap:10px;font-size:13px}
+  .pdfwrap .qhead{display:flex}
+  .pdfwrap .qfoot{display:block}
+  .pdfwrap .qtitle{font-size:22px}
+  .pdfwrap .hero{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pdfwrap .hero > div{padding:8px 12px}
+  .pdfwrap .hero .v{font-size:21px}
+  .pdfwrap .plan{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:10px 14px;gap:12px}
+  .pdfwrap .plan .pp{font-size:26px}
+  .pdfwrap .plan ul,.pdfwrap .plan .ps{font-size:12.5px}
+  .pdfwrap table{min-width:0;font-size:12px}
+  .pdfwrap th,.pdfwrap td{padding:5px 8px}
+  .pdfwrap .terms,.pdfwrap .assume{font-size:11px}
+  @media print{
+    @page{size:Letter;margin:0.5in}
+    body{background:#fff;font-size:12.5px}
+    header.top,.col-in,.notes,.gate{display:none !important}
+    main{padding:0;max-width:none}
+    .grid{display:block}
+    .quote{border:0;padding:0;gap:12px}
+    .qhead{display:flex !important}
+    .qfoot{display:block !important}
+    .quote{gap:10px}
+    .qtitle{font-size:21px}
+    .hero > div{padding:8px 12px}
+    .hero .v{font-size:20px}
+    .plan{padding:10px 14px;gap:12px}
+    .plan .pp{font-size:24px}
+    .plan ul,.plan .ps{font-size:12px}
+    table{min-width:0;font-size:11.5px}
+    th,td{padding:5px 8px}
+    .terms,.assume{font-size:10.5px}
+    .tblwrap{overflow:visible}
+    tr,.plan,.hero,.terms{break-inside:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body class="rep">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="mnc-mark" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="116" fill="#e9dcc3"/>
+    <g transform="translate(-8 11)">
+      <g transform="translate(222 278)"><g transform="rotate(-45) scale(0.86)">
+        <path fill="#16302b" stroke="#16302b" stroke-width="26" stroke-linejoin="round" d="M -20 -160 L 52 -160 L 52 -96 L 4 -96 C -58 -52 -58 52 4 96 L 52 96 L 52 160 L -20 160 C -122 100 -122 -100 -20 -160 Z"/>
+      </g></g>
+      <circle cx="362" cy="156" r="66" fill="#16302b"/>
+      <path d="M 331 157 L 354 180 L 395 136" fill="none" stroke="#e9dcc3" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </symbol>
+</svg>
+
+<header class="top"><div class="in">
+  <div class="brand"><svg width="28" height="28" aria-hidden="true"><use href="#mnc-mark"/></svg><div>MissNo<span>Call</span></div><em>Quote calculator</em></div>
+  <div class="bar" id="bar" hidden>
+    <div class="seg" role="group" aria-label="View"><button type="button" id="vRep" class="on">Rep view</button><button type="button" id="vCli">Client view</button></div>
+    <button type="button" class="btn" id="pdfBtn">Download PDF</button>
+    <a href="/studio/" style="color:#bfd3cb;font-size:13.5px">Demo Studio</a>
+  </div>
+</div></header>
+
+<main>
+  <section class="card gate" id="gate">
+    <h1>Quote calculator</h1>
+    <p>Same PIN as the Demo Studio.</p>
+    <label for="pin">PIN</label>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="current-password">
+    <button class="btn" id="pinBtn" type="button">Open</button>
+    <div class="err" id="pinErr" hidden></div>
+  </section>
+
+  <div class="grid" id="app" hidden>
+    <!-- ================= INPUTS ================= -->
+    <div class="col-in">
+      <section class="card">
+        <h2>1 · The business</h2>
+        <label for="cname">Business name</label>
+        <input type="text" id="cname" value="Glow Aesthetics (example)">
+        <label for="owner">Owner's name <small>(on the quote)</small></label>
+        <input type="text" id="owner" placeholder="e.g. Dr. Sarah Kim">
+        <label for="preset">Type of business <small>(fills typical numbers; overwrite with theirs)</small></label>
+        <select id="preset"></select>
+        <div class="two">
+          <div><label for="loc">Locations</label><input type="number" id="loc" min="1" max="20" step="1" value="1"></div>
+          <div><label for="value">New client is worth <small>($, 1st year)</small></label><input type="number" id="value" min="0" step="50"></div>
+        </div>
+        <div class="two">
+          <div><label for="calls">Calls a week <small>(all)</small></label><input type="number" id="calls" min="0" step="5"></div>
+          <div><label for="missed">Missed a week</label><input type="number" id="missed" min="0" step="1"></div>
+        </div>
+        <div class="rr"><label for="conv">Missed callers who'd become clients</label><output id="convO"></output></div>
+        <input type="range" id="conv" min="5" max="60" step="1">
+        <label for="cover">The receptionist answers</label>
+        <select id="cover"><option value="all">Every call</option><option value="missed">Only missed and after-hours calls</option></select>
+        <label for="rev">Their monthly revenue <small>(optional, only if they told you)</small></label>
+        <input type="number" id="rev" min="0" step="1000" placeholder="Leave empty if unknown">
+      </section>
+
+      <section class="card">
+        <h2>2 · What they told you</h2>
+        <label class="chk" for="spanish"><input type="checkbox" id="spanish"> Spanish-speaking callers</label>
+        <label class="chk" for="hangup"><input type="checkbox" id="hangup"> Callers hang up without leaving a voicemail</label>
+        <label class="chk" for="ads"><input type="checkbox" id="ads"> They pay for ads or marketing</label>
+        <label class="chk" for="referred"><input type="checkbox" id="referred"> Referred by one of our clients <small>($500 off setup)</small></label>
+      </section>
+
+      <section class="card">
+        <h2>3 · Plan and extras</h2>
+        <div class="plans-pick" role="group" aria-label="Plan">
+          <button type="button" id="p-essentials">Essentials<small>&nbsp;</small></button>
+          <button type="button" id="p-growth">Growth<small>&nbsp;</small></button>
+          <button type="button" id="p-elite">Elite<small>&nbsp;</small></button>
+        </div>
+        <div class="hint" id="pickHint"></div>
+        <label class="chk" for="sms"><input type="checkbox" id="sms"> Extra 500 texts a month</label>
+        <label class="chk" for="voice"><input type="checkbox" id="voice"> Custom brand voice</label>
+        <label class="chk" for="founding"><input type="checkbox" id="founding"> Founding client offer <small>(only when Jovan confirmed a spot is open)</small></label>
+        <div class="derived"><span>Calls the receptionist answers a week</span><b id="dHandled">—</b></div>
+        <div class="derived"><span>Minutes they'd use a month</span><b id="dMin">—</b></div>
+      </section>
+    </div>
+
+    <!-- ================= QUOTE ================= -->
+    <div style="min-width:0">
+      <article class="quote" id="quote" aria-live="polite">
+        <div class="qhead">
+          <div class="logo"><svg width="34" height="34" viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="116" fill="#e9dcc3"/><g transform="translate(-8 11)"><g transform="translate(222 278)"><g transform="rotate(-45) scale(0.86)"><path fill="#16302b" stroke="#16302b" stroke-width="26" stroke-linejoin="round" d="M -20 -160 L 52 -160 L 52 -96 L 4 -96 C -58 -52 -58 52 4 96 L 52 96 L 52 160 L -20 160 C -122 100 -122 -100 -20 -160 Z"/></g></g><circle cx="362" cy="156" r="66" fill="#16302b"/><path d="M 331 157 L 354 180 L 395 136" fill="none" stroke="#e9dcc3" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></g></svg><div>MissNo<span>Call</span></div></div>
+          <div class="meta"><div id="qDate"></div><div>Valid for 14 days</div></div>
+        </div>
+        <div>
+          <h1 class="qtitle" id="qTitle">Your MissNoCall quote</h1>
+          <p class="qsub" id="qSub"></p>
+        </div>
+
+        <div class="hero">
+          <div><div class="k">Missed calls cost you</div><div class="v" id="hLost">—</div><div class="s">a month, at your numbers</div></div>
+          <div><div class="k">We plan to win back</div><div class="v" id="hWin">—</div><div class="s" id="hWinS">a month</div></div>
+          <div class="main"><div class="k">Your return</div><div class="v" id="hRoi">—</div><div class="s" id="hRoiS">the monthly fee</div></div>
+        </div>
+
+        <div class="plan">
+          <div>
+            <div class="pn" id="qPlanName">Growth</div>
+            <div class="pp" id="qPrice">—</div>
+            <div class="ps" id="qSetup"></div>
+            <div class="ps" id="qMinutes"></div>
+            <div class="ps" id="qAddMonthly"></div>
+          </div>
+          <ul id="qFeatures"></ul>
+        </div>
+        <div class="others" id="qOthers"></div>
+
+        <div>
+          <h3>Ways to start</h3>
+          <div class="tblwrap"><table>
+            <thead><tr><th>Option</th><th class="n">Monthly</th><th class="n">Setup</th><th class="n">First year, total</th><th class="n">You save, first year</th></tr></thead>
+            <tbody id="qTerms"></tbody>
+          </table></div>
+        </div>
+
+        <div id="qAddonsWrap">
+          <h3>Included in this quote</h3>
+          <ul class="addons" id="qAddons"></ul>
+        </div>
+
+        <div class="terms" id="qTermsText"></div>
+        <div class="assume" id="qAssume"></div>
+        <div class="qfoot">MissNoCall is a service of WhiteFort Digital LLC, 30 N Gould St Ste N, Sheridan, WY 82801 · missnocall.co · +1 (818) 688-6968 · Prices in USD.</div>
+      </article>
+
+      <section class="notes" id="notes">
+        <h3><span>Rep notes <small style="font-weight:400;color:var(--muted)">(not shown to the client)</small></span><button type="button" class="copybtn" id="copyTalk">Copy talk track</button></h3>
+        <div id="flags"></div>
+        <div class="talk" id="talk"></div>
+        <div class="flag info" id="after"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<script>
+(function () {
+"use strict";
+var FN = "https://ytekgbwkzlfvejejobss.supabase.co/functions/v1/studio";
+var $ = function (id) { return document.getElementById(id); };
+function store(k, v) { try { v === null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+function usd(v) { return "$" + Math.round(v).toLocaleString("en-US"); }
+function usd2(v) { var r = Math.round(v * 100) / 100; return "$" + r.toLocaleString("en-US", { minimumFractionDigits: r % 1 ? 2 : 0, maximumFractionDigits: 2 }); }
+function num(id) { var v = parseFloat($(id).value); return isFinite(v) && v >= 0 ? v : 0; }
+function r97(v) { return Math.round(v / 100) * 100 - 3; }
+
+/* Typical numbers per business (per week, whole business). Overwrite with theirs. */
+var PRESETS = {
+  "Med spa / aesthetics": { calls: 60, missed: 20, conv: 20, value: 500 },
+  "Dental practice": { calls: 110, missed: 22, conv: 20, value: 600 },
+  "HVAC / plumbing / electrical": { calls: 140, missed: 28, conv: 30, value: 450 },
+  "Law firm": { calls: 45, missed: 11, conv: 10, value: 3500 },
+  "Salon / spa": { calls: 110, missed: 22, conv: 30, value: 250 },
+  "Auto repair": { calls: 110, missed: 22, conv: 25, value: 400 },
+  "Other local business": { calls: 70, missed: 15, conv: 20, value: 500 }
+};
+
+var C = null;           // config from the server (offer + pricing rules)
+var PLAN = "growth", userPicked = false, view = "rep", PIN = "";
+var S = {};             // last computed state
+
+/* ---------- PIN ---------- */
+async function api(body) {
+  var r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  var d = {}; try { d = await r.json(); } catch (e) {}
+  if (!r.ok || d.ok === false) throw new Error(d.error || "Something went wrong. Try again.");
+  return d;
+}
+async function enter(pin) {
+  var d = await api({ action: "quote_config", pin: pin });
+  PIN = pin; store("mnc_pin", pin); C = d.config;
+  $("gate").hidden = true; $("app").hidden = false; $("bar").hidden = false;
+  start();
+}
+$("pinBtn").onclick = function () {
+  $("pinErr").hidden = true; $("pinBtn").disabled = true;
+  enter($("pin").value.trim()).catch(function (e) { $("pinErr").textContent = e.message; $("pinErr").hidden = false; }).finally(function () { $("pinBtn").disabled = false; });
+};
+$("pin").addEventListener("keydown", function (e) { if (e.key === "Enter") $("pinBtn").click(); });
+var saved = load("mnc_pin");
+if (saved) enter(saved).catch(function () { store("mnc_pin", null); });
+
+/* ---------- offer helpers ---------- */
+function row(k) { for (var i = 0; i < C.rows.length; i++) if (C.rows[i].kljuc === k) return C.rows[i]; return null; }
+var KEYS = ["essentials", "growth", "elite"];
+function weekly(p) { return Math.round(p.minuti * 0.8 / C.pricing.call_minutes / C.pricing.weeks_per_month / 10) * 10; }
+
+function start() {
+  var sel = $("preset");
+  Object.keys(PRESETS).forEach(function (k) { var o = document.createElement("option"); o.value = k; o.textContent = k; sel.appendChild(o); });
+  sel.value = "Med spa / aesthetics"; applyPreset(sel.value);
+  sel.addEventListener("change", function () { applyPreset(sel.value); });
+  ["cname", "owner", "loc", "value", "calls", "missed", "conv", "rev"].forEach(function (id) { $(id).addEventListener("input", calc); });
+  ["cover", "spanish", "hangup", "ads", "referred", "sms", "voice", "founding"].forEach(function (id) { $(id).addEventListener("change", calc); });
+  KEYS.forEach(function (k) { $("p-" + k).onclick = function () { PLAN = k; userPicked = true; calc(); }; });
+  $("vRep").onclick = function () { setView("rep"); };
+  $("vCli").onclick = function () { setView("client"); };
+  $("pdfBtn").onclick = downloadPdf;
+  $("copyTalk").onclick = copyTalk;
+  calc();
+}
+function applyPreset(k) { var p = PRESETS[k]; if (!p) return; $("calls").value = p.calls; $("missed").value = p.missed; $("conv").value = p.conv; $("value").value = p.value; calc(); }
+function setView(v) { view = v; document.body.className = v; $("vRep").classList.toggle("on", v === "rep"); $("vCli").classList.toggle("on", v === "client"); }
+
+/* ---------- the math ---------- */
+function recommend(loc, handledWk, ads, hangup) {
+  var ess = row("essentials"), gro = row("growth");
+  if (loc >= 2) return ["elite", "They have " + loc + " locations. Elite covers two."];
+  if (handledWk > weekly(gro)) return ["elite", "It would answer about " + Math.round(handledWk) + " calls a week, more than Growth covers (~" + weekly(gro) + ")."];
+  if (ads || hangup) return ["growth", ads && hangup ? "They run ads and callers hang up: Growth texts every hang-up back." : ads ? "They pay for ads: Growth alerts them to hot leads and syncs the CRM." : "Callers hang up: Growth texts every hang-up back within seconds."];
+  if (handledWk >= weekly(ess)) return ["growth", "About " + Math.round(handledWk) + " calls a week is Growth territory (" + weekly(ess) + "–" + weekly(gro) + ")."];
+  if ($("cover").value === "missed") return ["essentials", "Only missed and after-hours calls, under ~" + weekly(ess) + " a week."];
+  return ["growth", "Not a clear case for a smaller or bigger plan, so lead with Growth."];
+}
+
+function calc() {
+  if (!C) return;
+  var P = C.pricing;
+  var loc = Math.max(1, Math.round(num("loc")) || 1);
+  var calls = num("calls"), missed = num("missed");
+  var conv = num("conv"), value = num("value"), rev = num("rev");
+  var cover = $("cover").value, spanish = $("spanish").checked, hangup = $("hangup").checked, ads = $("ads").checked;
+  var referred = $("referred").checked, founding = $("founding").checked;
+  $("convO").textContent = conv + "%";
+
+  var W = P.weeks_per_month;
+  var lost = missed * W * (conv / 100) * value;
+  var win = lost * P.capture_pct / 100;
+  var handledWk = cover === "all" ? calls : missed;
+  var minutesUse = handledWk * W * P.call_minutes;
+  $("dHandled").textContent = handledWk > 0 ? Math.round(handledWk).toLocaleString("en-US") : "—";
+  $("dMin").textContent = minutesUse > 0 ? Math.round(minutesUse).toLocaleString("en-US") : "—";
+
+  // value-based price: Growth is priced so the client gets about P.multiplier x back; never below the list price
+  var gro = row("growth");
+  var raw = (win / loc) / P.multiplier;
+  var capped = false;
+  if (rev > 0) {
+    var budget = rev * P.revenue_cap_pct / 100 / loc;
+    if (raw > budget) { capped = true; raw = budget + (raw - budget) * 0.10; }
+  }
+  var factor = Math.max(1, raw / gro.iznos);
+  var maxNoRev = P.max_factor_without_revenue || 2, heldNoRev = false;
+  if (rev <= 0 && factor > maxNoRev) { factor = maxNoRev; heldNoRev = true; }
+  var bilingual = row("bilingual"), extraLoc = row("extra_location"), extraSms = row("extra_sms"), voiceRow = row("custom_voice"), over = row("overage").iznos;
+
+  var tiers = {};
+  KEYS.forEach(function (k) {
+    var p = row(k);
+    var fee = factor > 1.0001 ? Math.max(p.iznos, r97(p.iznos * factor)) : p.iznos;
+    var extraLocs = Math.max(0, loc - p.lokacije);
+    var addM = extraLocs * extraLoc.iznos + (spanish && p.spanski !== "uključeno" ? bilingual.iznos : 0) + ($("sms").checked && p.sms_ukljuceno > 0 ? extraSms.iznos : 0);
+    var oneTime = ($("voice").checked && !p.poseban_glas ? voiceRow.iznos : 0);
+    var ovMin = Math.max(0, Math.round(minutesUse - p.minuti));
+    var vf = (P.value_factor && P.value_factor[k]) || 1;
+    var roi = fee + addM > 0 ? (win * vf) / (fee + addM) : 0;
+    tiers[k] = { p: p, fee: fee, addM: addM, oneTime: oneTime, extraLocs: extraLocs, ovMin: ovMin, ovCost: ovMin * over, roi: roi };
+  });
+
+  var rec = recommend(loc, handledWk, ads, hangup);
+  if (!userPicked) PLAN = rec[0];
+  KEYS.forEach(function (k) {
+    var b = $("p-" + k); b.classList.toggle("on", k === PLAN);
+    b.querySelector("small").textContent = usd(tiers[k].fee) + "/mo" + (k === rec[0] ? " · pick" : "");
+  });
+  $("pickHint").textContent = "Recommended: " + row(rec[0]).naziv + ". " + rec[1];
+  $("sms").parentNode.classList.toggle("off", !(tiers[PLAN].p.sms_ukljuceno > 0));
+  $("sms").disabled = !(tiers[PLAN].p.sms_ukljuceno > 0);
+  $("voice").parentNode.classList.toggle("off", !!tiers[PLAN].p.poseban_glas);
+  $("voice").disabled = !!tiers[PLAN].p.poseban_glas;
+
+  var t = tiers[PLAN], p = t.p, F = t.fee, A = t.addM, S1 = p.setup_iznos, V = t.oneTime;
+  var refOff = referred ? row("referred_setup").iznos : 0;
+  function setupAfter(base) { return Math.max(0, base - refOff); }
+
+  // header
+  var name = $("cname").value.trim();
+  var owner = $("owner").value.trim();
+  $("qTitle").textContent = name ? "Quote for " + name : "Your MissNoCall quote";
+  $("qSub").textContent = (owner ? "Prepared for " + owner + ". " : "") + "An AI receptionist that answers every call, books appointments and never sends a new client to voicemail.";
+  $("qDate").textContent = "Prepared " + new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+
+  // hero
+  $("hLost").textContent = lost > 0 ? usd(lost) : "—";
+  $("hWin").textContent = win > 0 ? usd(win) : "—";
+  $("hWinS").textContent = "a month (" + P.capture_pct + "% of missed callers)";
+  $("hRoi").textContent = t.roi > 0 ? t.roi.toFixed(1) + "×" : "—";
+  $("hRoiS").textContent = "the monthly fee of " + usd(F + A);
+
+  // plan card
+  $("qPlanName").textContent = p.naziv + " plan";
+  $("qPrice").innerHTML = usd(F) + "<small> / month</small>";
+  $("qSetup").innerHTML = "Setup from <b>" + usd(S1) + "</b>, lower on a 6- or 12-month term";
+  $("qMinutes").innerHTML = "<b>" + p.minuti.toLocaleString("en-US") + "</b> talk minutes a month, about " + weekly(p) + " calls a week" + (p.lokacije > 1 ? " · " + p.lokacije + " locations" : "");
+  $("qAddMonthly").innerHTML = A > 0 ? "Plus <b>" + usd(A) + "</b> a month for the extras below" : "";
+  var feats = [];
+  if (p.funkcije_osnova) feats.push('<li class="base">' + p.funkcije_osnova + ", plus:</li>");
+  p.funkcije.forEach(function (f) { feats.push("<li>" + f + "</li>"); });
+  $("qFeatures").innerHTML = feats.join("");
+  var idx = KEYS.indexOf(PLAN), others = [];
+  if (idx > 0) others.push("Smaller: <b>" + tiers[KEYS[idx - 1]].p.naziv + " " + usd(tiers[KEYS[idx - 1]].fee) + "/mo</b> (" + tiers[KEYS[idx - 1]].p.minuti.toLocaleString("en-US") + " minutes)");
+  if (idx < 2) others.push("Bigger: <b>" + tiers[KEYS[idx + 1]].p.naziv + " " + usd(tiers[KEYS[idx + 1]].fee) + "/mo</b> (" + tiers[KEYS[idx + 1]].p.minuti.toLocaleString("en-US") + " minutes)");
+  $("qOthers").innerHTML = others.join(" · ");
+
+  // ways to start (discounts apply to the plan fee only, not extras)
+  var m6 = row("6m"), m12 = row("12m"), pre = row("prepaid"), fnd = row("founding");
+  var listYear = setupAfter(S1) + 12 * (F + A) + V;
+  var opts = [];
+  opts.push({ name: "Month to month", sub: "Cancel with " + row("notice").iznos + " days' notice", monthly: usd2(F + A), setup: setupAfter(S1), year: listYear });
+  var f6 = F * (1 - m6.pct / 100);
+  opts.push({ name: "6 months", sub: "Save " + usd2(F - f6) + " a month for 6 months", monthly: usd2(f6 + A) + "<small>then " + usd2(F + A) + "</small>", setup: setupAfter(S1 * (1 - m6.setup_pct / 100)), year: setupAfter(S1 * (1 - m6.setup_pct / 100)) + 6 * (f6 + A) + 6 * (F + A) + V });
+  var f12 = F * (1 - m12.pct / 100);
+  opts.push({ name: "12 months", sub: "Save " + usd2(F - f12) + " a month all year", monthly: usd2(f12 + A), setup: setupAfter(S1 * (1 - m12.setup_pct / 100)), year: setupAfter(S1 * (1 - m12.setup_pct / 100)) + 12 * (f12 + A) + V, rec: !founding });
+  var fp = F * (1 - pre.pct / 100);
+  opts.push({ name: "12 months, paid upfront", sub: usd2(fp * 12) + " for the year, paid at go-live" + (A > 0 ? "; extras monthly" : ""), monthly: usd2(fp) + "<small>a month, paid upfront" + (A > 0 ? " + " + usd2(A) + " a month extras" : "") + "</small>", setup: setupAfter(S1 * (1 - pre.setup_pct / 100)), year: setupAfter(S1 * (1 - pre.setup_pct / 100)) + 12 * (fp + A) + V });
+  if (founding) {
+    var ff = F * (1 - fnd.pct / 100);
+    opts.push({ name: "Founding client", sub: fnd.meseci + " months at " + usd2(ff) + ", then " + usd2(F) + " · 12-month agreement · a short testimonial once it works", monthly: usd2(ff + A) + "<small>then " + usd2(F + A) + "</small>", setup: setupAfter(fnd.setup_iznos), year: setupAfter(fnd.setup_iznos) + fnd.meseci * (ff + A) + (12 - fnd.meseci) * (F + A) + V, rec: true });
+  }
+  $("qTerms").innerHTML = opts.map(function (o) {
+    var save = listYear - o.year;
+    return '<tr class="' + (o.rec ? "hi" : "") + '"><td><b>' + o.name + "</b>" + (o.rec ? '<span class="tagrec">recommended</span>' : "") + "<small>" + o.sub + '</small></td><td class="n">' + o.monthly + '</td><td class="n">' + (o.setup > 0 ? usd2(o.setup) : "Free") + '</td><td class="n">' + usd2(o.year) + '</td><td class="n">' + (save > 0.5 ? '<span class="save">' + usd2(save) + "</span>" : "—") + "</td></tr>";
+  }).join("");
+
+  // extras
+  var ad = [];
+  if (t.extraLocs > 0) ad.push(t.extraLocs + " extra location" + (t.extraLocs > 1 ? "s" : "") + " (own line, calendar and FAQs): " + usd(t.extraLocs * extraLoc.iznos) + " a month");
+  if (spanish) ad.push(p.spanski === "uključeno" ? "English & Spanish: included" : "English & Spanish: " + usd(bilingual.iznos) + " a month");
+  if ($("sms").checked && p.sms_ukljuceno > 0) ad.push("500 extra texts: " + usd(extraSms.iznos) + " a month");
+  if ($("voice").checked) ad.push(p.poseban_glas ? "Custom brand voice: included" : "Custom brand voice: " + usd(voiceRow.iznos) + " one time (in the first-year total)");
+  if (referred) ad.push("Referral: " + usd(refOff) + " off setup");
+  $("qAddons").innerHTML = ad.map(function (x) { return "<li>" + x + "</li>"; }).join("");
+  $("qAddonsWrap").hidden = ad.length === 0;
+
+  // terms
+  var tt = [];
+  tt.push("Setup is paid half when you sign and half on the day your receptionist goes live. Your monthly plan starts on go-live. Calls are answered within 3–7 business days after a short kickoff call, and your phone number stays the same.");
+  tt.push("We email you at " + row("alert").pct + "% of your minutes. Minutes over the plan are " + usd2(over) + " each on the next invoice. Minutes reset every month.");
+  tt.push("Savings on 6- and 12-month terms apply to the plan fee, not extras. If you leave a term early, you pay back the savings you received, not the remaining months. Setup is not refundable.");
+  if (p.sms_ukljuceno > 0) tt.push("Texting starts once US carriers approve your number, usually 1–3 weeks after go-live.");
+  tt.push("Before you sign, our team confirms how it connects to your calendar or booking system.");
+  $("qTermsText").innerHTML = tt.map(function (x) { return "<p>" + x + "</p>"; }).join("");
+  $("qAssume").textContent = lost > 0 ? "How we calculated this: " + Math.round(missed) + " missed calls a week × " + W + " weeks × " + conv + "% who would become clients × " + usd(value) + " per new client in the first year. We plan on winning back " + P.capture_pct + "% of that." : "";
+
+  // rep notes
+  var flags = [];
+  flags.push(["rec", "<b>Recommended: " + row(rec[0]).naziv + ".</b> " + rec[1] + (PLAN !== rec[0] ? " You picked " + p.naziv + "." : "")]);
+  if (lost <= 0) flags.push(["warn", "Fill in missed calls, the share who'd become clients and what a new client is worth."]);
+  if (t.roi > 0 && t.roi < 3) flags.push(["warn", "Their return is under 3×. Check their numbers. If they're right, offer the 12-month term or a smaller plan, and don't push."]);
+  if (factor > 1.0001) flags.push(["info", "Their numbers support more than the list price, so the quote is above it (" + usd(F) + " instead of " + usd(p.iznos) + "). Use these numbers; never offer the list price instead."]);
+  if (capped) flags.push(["info", "Price held at about " + P.revenue_cap_pct + "% of their revenue, so it stays affordable."]);
+  if (heldNoRev) flags.push(["info", "Their numbers support even more, but without their monthly revenue the quote stops at " + maxNoRev + "× the list price. Ask their revenue to quote higher."]);
+  if (F / Math.min(loc, p.lokacije) > 3000) flags.push(["warn", "Over $3,000 a month per location is more than most AI receptionist companies charge. The live demo has to carry it, or use the 12-month term."]);
+  if (loc >= 2 && PLAN !== "elite") flags.push(["warn", "Two or more locations: the script says Elite. Don't sell one location's plan to a multi-location business."]);
+  if (PLAN === "essentials" && (ads || hangup)) flags.push(["warn", "They run ads or callers hang up: Essentials has no text-back and they'll run short. The script says Growth."]);
+  if (t.ovMin > 0) {
+    var nxt = idx < 2 ? tiers[KEYS[idx + 1]] : null;
+    flags.push(["warn", "They'd use about " + Math.round(minutesUse).toLocaleString("en-US") + " minutes, " + t.ovMin.toLocaleString("en-US") + " over the plan (about " + usd(t.ovCost) + " extra a month)." + (nxt && nxt.fee + nxt.addM <= F + A + t.ovCost ? " " + nxt.p.naziv + " costs less than that in total." : "")]);
+  }
+  if (founding) flags.push(["warn", "Founding offer: only if Jovan confirmed today that a spot is open."]);
+  flags.push(["info", "Booking: don't promise it books into their booking software until we confirm. Write the software in the Close note."]);
+  $("flags").innerHTML = flags.map(function (f) { return '<div class="flag ' + (f[0] === "warn" ? "" : f[0]) + '">' + f[1] + "</div>"; }).join("");
+
+  var who = name || "your business";
+  $("talk").innerHTML = lost > 0
+    ? "“From what you told me, " + esc(who) + " misses about <b>" + Math.round(missed) + " calls a week</b>. At your numbers that's roughly <b>" + usd(lost) + " a month</b> going to someone else. We plan on winning back about " + P.capture_pct + "% of that, around <b>" + usd(win) + " a month</b>. " + p.naziv + " is <b>" + usd(F + A) + " a month</b>, so it pays for itself about <b>" + t.roi.toFixed(1) + " times</b>. On a 12-month term it's " + usd2(f12 + A) + " a month and setup is half.”"
+    : "Fill in their numbers to get the talk track.";
+  $("after").innerHTML = "After the call, send Jovan: business, plan (" + p.naziv + " " + usd(F) + "/mo), the option they chose, owner's name and email, who referred them, booking software, and anything you promised. Set Close to <b>Quote Sent</b>.";
+  S = { lost: lost, win: win, F: F };
+}
+/* Download the client quote as a PDF file straight to the computer (no print dialog). */
+var PDF_LIB = "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js";
+function loadPdfLib() {
+  return new Promise(function (ok, bad) {
+    if (window.html2pdf) return ok();
+    var s = document.createElement("script"); s.src = PDF_LIB; s.onload = function () { ok(); }; s.onerror = function () { bad(new Error("Could not load the PDF tool. Check the internet connection and try again.")); };
+    document.head.appendChild(s);
+  });
+}
+function downloadPdf() {
+  var b = $("pdfBtn"), prev = view, old = b.textContent;
+  b.disabled = true; b.textContent = "Making PDF…";
+  var name = ($("cname").value.trim() || "Client").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  var file = "MissNoCall-Quote-" + name + "-" + new Date().toISOString().slice(0, 10) + ".pdf";
+  loadPdfLib().then(function () {
+    setView("client"); document.body.classList.add("pdfmode");
+    // render a copy at a fixed width (the page width at these margins), so laptop and phone give the same file
+    var holder = document.createElement("div");
+    holder.style.cssText = "position:fixed;left:-10000px;top:0";
+    var wrap = document.createElement("div");
+    wrap.className = "pdfwrap";
+    var copy = $("quote").cloneNode(true); copy.removeAttribute("id");
+    wrap.appendChild(copy); holder.appendChild(wrap); document.body.appendChild(holder);
+    return window.html2pdf().set({
+      margin: [0.35, 0.35, 0.35, 0.35], filename: file,
+      image: { type: "jpeg", quality: 0.96 },
+      html2canvas: { scale: 2, scrollX: 0, scrollY: 0, backgroundColor: "#ffffff" },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+      pagebreak: { mode: ["css"], avoid: [".plan", ".hero"] }
+    }).from(wrap).save().then(function () { holder.remove(); }, function (e) { holder.remove(); throw e; });
+  }).then(function () { b.textContent = "Saved to Downloads"; }, function (e) { b.textContent = "PDF failed"; alertMsg(e.message); })
+    .finally(function () {
+      // never leave the PDF tool's dark overlay on screen, even if something failed
+      document.querySelectorAll(".html2pdf__overlay").forEach(function (o) { o.remove(); });
+      document.body.classList.remove("pdfmode"); setView(prev);
+      setTimeout(function () { b.textContent = old; b.disabled = false; }, 2500);
+    });
+}
+function alertMsg(m) { var f = $("flags"); if (f) f.insertAdjacentHTML("afterbegin", '<div class="flag">' + esc(m) + "</div>"); }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function copyTalk() {
+  var b = $("copyTalk"), txt = $("talk").innerText;
+  function done(m) { b.textContent = m; setTimeout(function () { b.textContent = "Copy talk track"; }, 2000); }
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { done("Copied"); }, function () { done("Select and copy"); });
+  else done("Select and copy");
+}
+})();
+</script>
+</body>
+</html>

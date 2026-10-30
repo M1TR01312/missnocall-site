@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="sr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>MissNoCall Demo Studio</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<style>
+  :root{--forest:#16302b;--forest2:#21443d;--sand:#e9dcc3;--gold:#d4a373;--gold2:#b8875a;--cream:#f6f3ec;--line:#e2dccd;--ink:#1f2a28;--muted:#5d6b67;--ok:#1f7a5a;--bad:#b4462f;--white:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--cream);color:var(--ink);font-family:"Helvetica Neue",Arial,sans-serif;font-size:16px;line-height:1.5}
+  header{background:var(--forest);color:#fff;padding:14px 16px}
+  header .in{max-width:760px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .brand{font-family:Georgia,serif;font-weight:700;font-size:20px}
+  .brand span{color:var(--gold)}
+  .tag{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+  main{max-width:760px;margin:0 auto;padding:20px 16px 60px;display:grid;gap:16px}
+  .card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:20px}
+  h1{font-family:Georgia,serif;font-size:26px;margin:0 0 4px;color:var(--forest)}
+  h2{font-size:17px;margin:0 0 12px;color:var(--forest)}
+  p.sub{margin:0 0 16px;color:var(--muted);font-size:14.5px}
+  label{display:block;font-size:13px;font-weight:700;color:var(--forest);margin:12px 0 5px}
+  label small{font-weight:400;color:var(--muted)}
+  input,select,textarea{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);border-color:var(--gold)}
+  textarea{min-height:70px;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  button{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 18px;cursor:pointer;background:var(--gold);color:#fff}
+  button.dark{background:var(--forest)}
+  button.ghost{background:transparent;color:var(--forest);border:1px solid var(--line)}
+  button.small{padding:7px 11px;font-size:13.5px;white-space:nowrap}
+  button:disabled{opacity:.55;cursor:wait}
+  .big{width:100%;margin-top:16px;padding:15px;font-size:17px}
+  .err{background:#fbecea;border:1px solid #efc6be;color:var(--bad);border-radius:10px;padding:10px 12px;font-size:14.5px;margin-top:12px}
+  .warn{background:#fdf4e6;border:1px solid #ecd3a6;color:#8a5a14;border-radius:10px;padding:10px 12px;font-size:14.5px;margin-top:12px}
+  .okmsg{color:var(--ok);font-size:14.5px;margin-top:10px}
+  .result{border:2px solid var(--gold);background:#fffaf2}
+  .callnum{font-family:Georgia,serif;font-size:32px;font-weight:700;color:var(--forest);margin:6px 0 2px;letter-spacing:.5px}
+  .callnum a{color:inherit;text-decoration:none}
+  .hint{font-size:13.5px;color:var(--muted)}
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .linkbox{display:flex;gap:8px;margin-top:8px}
+  .linkbox input{font-size:13.5px}
+  details{margin-top:12px}
+  summary{cursor:pointer;color:var(--forest);font-weight:700;font-size:14px}
+  pre{white-space:pre-wrap;font-size:12.5px;background:var(--cream);border-radius:8px;padding:10px;max-height:260px;overflow:auto}
+  ul.list{list-style:none;margin:0;padding:0}
+  ul.list li{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  ul.list li:first-child{border-top:0}
+  .meta{font-size:13px;color:var(--muted)}
+  .pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.5px;border-radius:20px;padding:2px 8px;background:var(--forest);color:#fff;margin-left:6px}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:s .8s linear infinite;vertical-align:-3px;margin-right:8px}
+  @keyframes s{to{transform:rotate(360deg)}}
+  .live{display:none;margin-top:12px;background:var(--forest);color:#e5f0ec;border-radius:12px;padding:14px}
+  .live b{color:var(--gold)}
+  .tx{font-size:14px;margin-top:8px;max-height:160px;overflow:auto}
+  .tx div{margin:3px 0}
+  .tx .agent{color:#fff}
+  .tx .user{color:#bcd3cb}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <div class="brand">MissNo<span>Call</span></div>
+  <div style="display:flex;gap:14px;align-items:center"><a href="/quote/" style="color:#e9dcc3;font-size:14px">Kalkulator ponude</a><div class="tag">Demo Studio</div></div>
+</div></header>
+
+<main>
+  <!-- PIN -->
+  <section class="card" id="pinCard">
+    <h1>Demo Studio</h1>
+    <p class="sub">Za 1 minut napravi recepcionera za firmu sa kojom razgovaraš, da ga vlasnik čuje odmah.</p>
+    <label for="pin">PIN</label>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••••">
+    <button class="big dark" id="pinBtn">Uđi</button>
+    <div class="err" id="pinErr" hidden></div>
+  </section>
+
+  <!-- CREATE -->
+  <section class="card" id="createCard" hidden>
+    <h1>Novi demo</h1>
+    <p class="sub">Upiši ime i sajt firme. Maya pročita sajt (usluge, cene, radno vreme) i javlja se kao njihova recepcija.</p>
+    <label for="bn">Ime firme *</label>
+    <input id="bn" placeholder="npr. Glow Aesthetics Med Spa" autocomplete="off">
+    <label for="web">Sajt <small>(preporučeno)</small></label>
+    <input id="web" placeholder="npr. glowaesthetics.com" autocomplete="off" inputmode="url">
+    <div class="row">
+      <div>
+        <label for="type">Vrsta firme</label>
+        <select id="type">
+          <option value="med spa">Med spa / estetika</option>
+          <option value="dental practice">Stomatolog</option>
+          <option value="HVAC and plumbing company">HVAC / vodoinstalater</option>
+          <option value="law firm">Advokatska kancelarija</option>
+          <option value="salon and spa">Salon / spa</option>
+          <option value="auto repair shop">Auto servis</option>
+          <option value="local business">Drugo</option>
+        </select>
+      </div>
+      <div>
+        <label for="city">Grad <small>(opciono)</small></label>
+        <input id="city" placeholder="npr. Austin, Texas" autocomplete="off">
+      </div>
+    </div>
+    <label for="notes">Napomena <small>(opciono: 2–3 glavne usluge, radno vreme, ako sajt ne radi)</small></label>
+    <textarea id="notes" placeholder="npr. Botox $13/unit, HydraFacial $199, open Mon–Sat 9–6"></textarea>
+    <button class="big" id="createBtn">Napravi demo</button>
+    <div class="err" id="createErr" hidden></div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="card result" id="resultCard" hidden>
+    <h2 id="resTitle">Demo je spreman</h2>
+    <div id="resRead" class="hint"></div>
+    <div class="warn" id="resWarn" hidden></div>
+
+    <div id="phoneBox">
+      <div class="meta" style="margin-top:14px">Neka vlasnik pozove sa svog telefona:</div>
+      <div class="callnum"><a id="resPhone" href="#">—</a></div>
+      <div class="hint">Taj broj igra ovu firmu sledeća 3 sata, ili dok ne napraviš novi demo.</div>
+    </div>
+    <div class="warn" id="noPhone" hidden>Demo broj još nije podešen (Podešavanje → izaberi broj). Do tada koristi link ispod.</div>
+
+    <div class="meta" style="margin-top:14px">Ili link: vlasnik priča sa Mayom preko browsera, na telefonu ili računaru:</div>
+    <div class="linkbox"><input id="resLink" readonly><button class="small dark" id="copyBtn">Kopiraj</button></div>
+    <div class="actions">
+      <a id="smsLink"><button class="small ghost" type="button">Pošalji SMS</button></a>
+      <a id="mailLink"><button class="small ghost" type="button">Pošalji mejl</button></a>
+      <button class="small" id="playBtn" type="button">Pusti ovde (preko zvučnika)</button>
+    </div>
+    <div class="live" id="live">
+      <div id="liveStatus"><b>Povezujem…</b></div>
+      <div class="tx" id="tx"></div>
+      <button class="small ghost" id="stopBtn" style="margin-top:8px;color:#fff;border-color:#557">Prekini</button>
+    </div>
+    <details>
+      <summary>Šta je Maya pročitala sa sajta</summary>
+      <pre id="resInfo"></pre>
+    </details>
+  </section>
+
+  <!-- RECENT -->
+  <section class="card" id="recentCard" hidden>
+    <h2>Poslednji demoi</h2>
+    <ul class="list" id="recent"></ul>
+  </section>
+
+  <!-- SETUP -->
+  <section class="card" id="setupCard" hidden>
+    <details id="setupDetails">
+      <summary>Podešavanje (samo prvi put)</summary>
+      <p class="sub" style="margin-top:10px">Pravi Retell agenta „MissNoCall Demo Studio” i prikazuje tvoje brojeve. Izaberi jedan broj za demo: on od tada vodi na Demo Studio.</p>
+      <button class="dark" id="setupBtn">Poveži Retell</button>
+      <div class="err" id="setupErr" hidden></div>
+      <div id="setupOut"></div>
+    </details>
+  </section>
+</main>
+
+<script type="module">
+const FN = "https://ytekgbwkzlfvejejobss.supabase.co/functions/v1/studio";
+const $ = (id) => document.getElementById(id);
+let PIN = "";
+let current = null;
+let client = null;
+
+function store(k, v) { try { v === null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} }
+function load(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+
+async function api(body) {
+  const r = await fetch(FN, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  let d = {};
+  try { d = await r.json(); } catch (e) {}
+  if (!r.ok || d.ok === false) throw new Error(d.error || ("Greška " + r.status));
+  return d;
+}
+function show(el, msg) { el.textContent = msg; el.hidden = !msg; }
+function busy(btn, on, text) {
+  btn.disabled = on;
+  if (on) { btn.dataset.t = btn.textContent; btn.innerHTML = '<span class="spin"></span>' + text; }
+  else if (btn.dataset.t) btn.textContent = btn.dataset.t;
+}
+const fmtTime = (iso) => new Date(iso).toLocaleString("sr-RS", { day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit" });
+
+// ---- PIN ----
+async function enter(pin) {
+  const d = await api({ action: "list", pin });
+  PIN = pin; store("mnc_pin", pin);
+  $("pinCard").hidden = true;
+  ["createCard", "recentCard", "setupCard"].forEach((id) => ($(id).hidden = false));
+  renderRecent(d);
+  if (!d.ready) $("setupDetails").open = true;
+}
+$("pinBtn").onclick = async () => {
+  const b = $("pinBtn"); show($("pinErr"), "");
+  busy(b, true, "Proveravam…");
+  try { await enter($("pin").value.trim()); } catch (e) { show($("pinErr"), e.message); }
+  busy(b, false);
+};
+$("pin").addEventListener("keydown", (e) => { if (e.key === "Enter") $("pinBtn").click(); });
+const saved = load("mnc_pin");
+if (saved) enter(saved).catch(() => store("mnc_pin", null));
+
+// ---- CREATE ----
+$("createBtn").onclick = async () => {
+  const b = $("createBtn"); show($("createErr"), "");
+  if (!$("bn").value.trim()) { show($("createErr"), "Upiši ime firme."); return; }
+  busy(b, true, "Čitam sajt i pravim Mayu…");
+  try {
+    const d = await api({
+      action: "create", pin: PIN,
+      business_name: $("bn").value, website: $("web").value, business_type: $("type").value,
+      city: $("city").value, notes: $("notes").value,
+    });
+    renderResult(d);
+    refreshRecent();
+  } catch (e) { show($("createErr"), e.message); }
+  busy(b, false);
+};
+
+function renderResult(d) {
+  current = d;
+  $("resultCard").hidden = false;
+  $("resTitle").textContent = "Demo je spreman: " + d.business_name;
+  $("resRead").textContent = d.pages_read ? `Pročitao sam ${d.pages_read} ${d.pages_read === 1 ? "stranu" : "strane"} sajta (${d.chars.toLocaleString("sr-RS")} znakova).` : "";
+  show($("resWarn"), d.warning || "");
+  const num = d.demo_number;
+  $("phoneBox").hidden = !num; $("noPhone").hidden = !!num;
+  if (num) { $("resPhone").textContent = num.pretty; $("resPhone").href = "tel:" + num.number; }
+  $("resLink").value = d.try_url;
+  const msg = `Hi! Here's the AI receptionist we set up for ${d.business_name} from your website. ` +
+    (num ? `Call ${num.pretty}, or talk to it in your browser: ${d.try_url}` : `Talk to it in your browser: ${d.try_url}`);
+  $("smsLink").href = "sms:?&body=" + encodeURIComponent(msg);
+  $("mailLink").href = "mailto:?subject=" + encodeURIComponent(`Your AI receptionist demo for ${d.business_name}`) + "&body=" + encodeURIComponent(msg + "\n\nMissNoCall · missnocall.co");
+  $("resInfo").textContent = d.info_preview || "(ništa: Maya koristi samo ime firme i napomenu)";
+  $("resultCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+$("copyBtn").onclick = async () => {
+  try { await navigator.clipboard.writeText($("resLink").value); $("copyBtn").textContent = "Kopirano"; }
+  catch (e) { $("resLink").select(); document.execCommand("copy"); $("copyBtn").textContent = "Kopirano"; }
+  setTimeout(() => ($("copyBtn").textContent = "Kopiraj"), 1500);
+};
+
+// ---- PLAY (web call) ----
+$("playBtn").onclick = async () => {
+  if (!current) return;
+  const b = $("playBtn"); busy(b, true, "Povezujem…");
+  $("live").style.display = "block"; $("liveStatus").innerHTML = "<b>Povezujem…</b>"; $("tx").innerHTML = "";
+  try {
+    const { RetellWebClient } = await import("/assets/retell-web.js");
+    const d = await api({ action: "webcall", demo_id: current.id });
+    client = new RetellWebClient();
+    client.on("call_started", () => ($("liveStatus").innerHTML = "<b>Uživo.</b> Pričaj na engleskom, kao klijent."));
+    client.on("agent_start_talking", () => ($("liveStatus").innerHTML = "<b>Maya govori…</b>"));
+    client.on("agent_stop_talking", () => ($("liveStatus").innerHTML = "<b>Sluša…</b>"));
+    client.on("update", (u) => {
+      const t = (u && u.transcript) || [];
+      $("tx").innerHTML = "";
+      t.slice(-6).forEach((m) => {
+        const div = document.createElement("div");
+        div.className = m.role === "agent" ? "agent" : "user";
+        div.textContent = (m.role === "agent" ? "Maya: " : "Klijent: ") + m.content;
+        $("tx").appendChild(div);
+      });
+    });
+    client.on("call_ended", () => { $("liveStatus").innerHTML = "<b>Poziv završen.</b>"; client = null; });
+    client.on("error", (e) => { $("liveStatus").innerHTML = "<b>Greška:</b> " + (e && e.message ? e.message : e); });
+    // Retell v3 web calls use the "gateway" transport: pass call id, transport and ICE servers.
+    await client.startCall({
+      accessToken: d.access_token,
+      callId: d.call_id,
+      transport: d.transport || undefined,
+      iceServers: d.ice_servers || undefined,
+      url: d.url || undefined,
+    });
+  } catch (e) { $("liveStatus").innerHTML = "<b>Greška:</b> " + e.message; }
+  busy(b, false);
+};
+$("stopBtn").onclick = () => { if (client) client.stopCall(); };
+
+// ---- RECENT ----
+async function refreshRecent() { try { renderRecent(await api({ action: "list", pin: PIN })); } catch (e) {} }
+function renderRecent(d) {
+  const ul = $("recent"); ul.innerHTML = "";
+  if (!d.demos || !d.demos.length) { ul.innerHTML = '<li class="meta">Još nema demoa.</li>'; return; }
+  d.demos.forEach((x) => {
+    const li = document.createElement("li");
+    const left = document.createElement("div");
+    const name = document.createElement("div"); name.textContent = x.business_name;
+    if (x.id === d.active_id) { const p = document.createElement("span"); p.className = "pill"; p.textContent = "NA BROJU"; name.appendChild(p); }
+    const meta = document.createElement("div"); meta.className = "meta";
+    meta.textContent = `${fmtTime(x.created_at)} · ${x.pages_read} str. · ${x.web_calls} poziva preko linka`;
+    left.append(name, meta);
+    const right = document.createElement("div"); right.style.display = "flex"; right.style.gap = "6px";
+    const act = document.createElement("button"); act.className = "small ghost"; act.textContent = "Na broj";
+    act.onclick = async () => { act.disabled = true; try { await api({ action: "activate", pin: PIN, demo_id: x.id }); refreshRecent(); } catch (e) { alertBox(e.message); } act.disabled = false; };
+    const link = document.createElement("button"); link.className = "small ghost"; link.textContent = "Link";
+    link.onclick = async () => { const u = location.origin + "/try/?d=" + x.id; try { await navigator.clipboard.writeText(u); link.textContent = "Kopirano"; } catch (e) { prompt("Link:", u); } setTimeout(() => (link.textContent = "Link"), 1500); };
+    right.append(act, link);
+    li.append(left, right); ul.appendChild(li);
+  });
+}
+function alertBox(m) { show($("createErr"), m); }
+
+// ---- SETUP ----
+$("setupBtn").onclick = () => runSetup();
+async function runSetup(bind) {
+  const b = $("setupBtn"); show($("setupErr"), "");
+  busy(b, true, "Povezujem…");
+  try {
+    const d = await api({ action: "setup", pin: PIN, bind_number: bind || undefined });
+    const out = $("setupOut"); out.innerHTML = "";
+    (d.steps || []).forEach((s) => { const p = document.createElement("div"); p.className = "okmsg"; p.textContent = "✓ " + s; out.appendChild(p); });
+    const ok = document.createElement("div"); ok.className = "okmsg"; ok.textContent = "✓ Agent je spreman. Link za browser radi."; out.appendChild(ok);
+    const h = document.createElement("h2"); h.style.marginTop = "16px"; h.textContent = "Tvoji brojevi u Retell-u"; out.appendChild(h);
+    if (!d.numbers.length) {
+      const p = document.createElement("div"); p.className = "warn";
+      p.textContent = "Nemaš nijedan broj u Retell-u. Kupi jedan US broj (Retell → Phone Numbers → Buy, oko $2 mesečno), pa ponovo klikni „Poveži Retell”.";
+      out.appendChild(p);
+    }
+    const ul = document.createElement("ul"); ul.className = "list"; out.appendChild(ul);
+    d.numbers.forEach((n) => {
+      const li = document.createElement("li");
+      const left = document.createElement("div");
+      const t = document.createElement("div"); t.textContent = n.pretty + (n.nickname ? " · " + n.nickname : "");
+      if (n.bound_to_studio) { const p = document.createElement("span"); p.className = "pill"; p.textContent = "DEMO BROJ"; t.appendChild(p); }
+      const m = document.createElement("div"); m.className = "meta";
+      m.textContent = n.bound_to_studio ? "Vodi na Demo Studio." : (n.other_agents ? "Sada vodi na drugog agenta (npr. Maya / Solenne)." : "Nije povezan.");
+      left.append(t, m);
+      li.appendChild(left);
+      if (!n.bound_to_studio) {
+        const btn = document.createElement("button"); btn.className = "small"; btn.textContent = "Koristi za demo";
+        btn.onclick = () => {
+          if (n.other_agents && !confirm("Ovaj broj sada vodi na drugog agenta. Ako ga prebaciš, više neće voditi tamo. Nastavi?")) return;
+          runSetup(n.number);
+        };
+        li.appendChild(btn);
+      }
+      ul.appendChild(li);
+    });
+    refreshRecent();
+  } catch (e) { show($("setupErr"), e.message); }
+  busy(b, false);
+}
+</script>
+</body>
+</html>
