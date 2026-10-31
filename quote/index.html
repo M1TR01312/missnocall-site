@@ -236,7 +236,6 @@
         <div class="hint" id="pickHint"></div>
         <label class="chk" for="sms"><input type="checkbox" id="sms"> Extra 500 texts a month</label>
         <label class="chk" for="voice"><input type="checkbox" id="voice"> Custom brand voice</label>
-        <label class="chk" for="founding"><input type="checkbox" id="founding"> Founding client offer <small>(only when Jovan confirmed a spot is open)</small></label>
         <div class="derived"><span>Calls the receptionist answers a week</span><b id="dHandled">—</b></div>
         <div class="derived"><span>Minutes they'd use a month</span><b id="dMin">—</b></div>
       </section>
@@ -359,7 +358,7 @@ function start() {
   sel.value = "Med spa / aesthetics"; applyPreset(sel.value);
   sel.addEventListener("change", function () { applyPreset(sel.value); });
   ["cname", "owner", "loc", "value", "calls", "missed", "conv", "rev"].forEach(function (id) { $(id).addEventListener("input", calc); });
-  ["cover", "spanish", "hangup", "ads", "referred", "sms", "voice", "founding"].forEach(function (id) { $(id).addEventListener("change", calc); });
+  ["cover", "spanish", "hangup", "ads", "referred", "sms", "voice"].forEach(function (id) { $(id).addEventListener("change", calc); });
   KEYS.forEach(function (k) { $("p-" + k).onclick = function () { PLAN = k; userPicked = true; calc(); }; });
   $("vRep").onclick = function () { setView("rep"); };
   $("vCli").onclick = function () { setView("client"); };
@@ -388,7 +387,7 @@ function calc() {
   var calls = num("calls"), missed = num("missed");
   var conv = num("conv"), value = num("value"), rev = num("rev");
   var cover = $("cover").value, spanish = $("spanish").checked, hangup = $("hangup").checked, ads = $("ads").checked;
-  var referred = $("referred").checked, founding = $("founding").checked;
+  var referred = $("referred").checked, founding = false;
   $("convO").textContent = conv + "%";
 
   var W = P.weeks_per_month;
@@ -471,7 +470,7 @@ function calc() {
   $("qOthers").innerHTML = others.join(" · ");
 
   // ways to start (discounts apply to the plan fee only, not extras)
-  var m6 = row("6m"), m12 = row("12m"), pre = row("prepaid"), fnd = row("founding");
+  var m6 = row("6m"), m12 = row("12m"), pre = row("prepaid");
   var listYear = setupAfter(S1) + 12 * (F + A) + V;
   var opts = [];
   opts.push({ name: "Month to month", sub: "Cancel with " + row("notice").iznos + " days' notice", monthly: usd2(F + A), setup: setupAfter(S1), year: listYear });
@@ -481,10 +480,6 @@ function calc() {
   opts.push({ name: "12 months", sub: "Save " + usd2(F - f12) + " a month all year", monthly: usd2(f12 + A), setup: setupAfter(S1 * (1 - m12.setup_pct / 100)), year: setupAfter(S1 * (1 - m12.setup_pct / 100)) + 12 * (f12 + A) + V, rec: !founding });
   var fp = F * (1 - pre.pct / 100);
   opts.push({ name: "12 months, paid upfront", sub: usd2(fp * 12) + " for the year, paid at go-live" + (A > 0 ? "; extras monthly" : ""), monthly: usd2(fp) + "<small>a month, paid upfront" + (A > 0 ? " + " + usd2(A) + " a month extras" : "") + "</small>", setup: setupAfter(S1 * (1 - pre.setup_pct / 100)), year: setupAfter(S1 * (1 - pre.setup_pct / 100)) + 12 * (fp + A) + V });
-  if (founding) {
-    var ff = F * (1 - fnd.pct / 100);
-    opts.push({ name: "Founding client", sub: fnd.meseci + " months at " + usd2(ff) + ", then " + usd2(F) + " · 12-month agreement · a short testimonial once it works", monthly: usd2(ff + A) + "<small>then " + usd2(F + A) + "</small>", setup: setupAfter(fnd.setup_iznos), year: setupAfter(fnd.setup_iznos) + fnd.meseci * (ff + A) + (12 - fnd.meseci) * (F + A) + V, rec: true });
-  }
   $("qTerms").innerHTML = opts.map(function (o) {
     var save = listYear - o.year;
     return '<tr class="' + (o.rec ? "hi" : "") + '"><td><b>' + o.name + "</b>" + (o.rec ? '<span class="tagrec">recommended</span>' : "") + "<small>" + o.sub + '</small></td><td class="n">' + o.monthly + '</td><td class="n">' + (o.setup > 0 ? usd2(o.setup) : "Free") + '</td><td class="n">' + usd2(o.year) + '</td><td class="n">' + (save > 0.5 ? '<span class="save">' + usd2(save) + "</span>" : "—") + "</td></tr>";
@@ -525,7 +520,6 @@ function calc() {
     var nxt = idx < 2 ? tiers[KEYS[idx + 1]] : null;
     flags.push(["warn", "They'd use about " + Math.round(minutesUse).toLocaleString("en-US") + " minutes, " + t.ovMin.toLocaleString("en-US") + " over the plan (about " + usd(t.ovCost) + " extra a month)." + (nxt && nxt.fee + nxt.addM <= F + A + t.ovCost ? " " + nxt.p.naziv + " costs less than that in total." : "")]);
   }
-  if (founding) flags.push(["warn", "Founding offer: only if Jovan confirmed today that a spot is open."]);
   flags.push(["info", "Booking: don't promise it books into their booking software until we confirm. Write the software in the Close note."]);
   $("flags").innerHTML = flags.map(function (f) { return '<div class="flag ' + (f[0] === "warn" ? "" : f[0]) + '">' + f[1] + "</div>"; }).join("");
 

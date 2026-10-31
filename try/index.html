@@ -121,6 +121,12 @@ $("startBtn").onclick = async () => {
   $("err").hidden = true;
   $("startBtn").disabled = true; $("status").textContent = "Connecting…";
   try {
+    // Ask for the microphone first. The call is created only after "Allow",
+    // so a slow answer to the browser's question can't make the call expire.
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mic.getTracks().forEach((t) => t.stop());
+    }
     const { RetellWebClient } = await import("/assets/retell-web.js");
     const d = await api({ action: "webcall", demo_id: demoId });
     client = new RetellWebClient();
